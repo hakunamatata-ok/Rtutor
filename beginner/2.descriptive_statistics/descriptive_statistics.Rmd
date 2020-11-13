@@ -1,0 +1,140 @@
+---
+title: "描述性統計 Descriptive statistics"
+output: html_document
+---
+
+- 將 iris 命名為 df。
+```{r}
+df <- iris
+df
+```
+
+### 了解資料
+```{r head}
+head(df)
+```
+
+```{r str}
+str(df)
+```
+
+```{r summary}
+summary(df)
+```
+
+```{r by}
+by(df, df$Species, summary)
+```
+
+```{r stat.desc}
+# install.packages("pastecs")
+library(pastecs)
+stat.desc(df)
+```
+
+```{r table}
+table(df$Species)
+```
+
+```{r NROW & NCOL}
+NROW(df)  # 行數
+NCOL(df)  # 列數
+```
+
+
+## 最小值與最大值
+- `min()`：找最小值。
+```{r}
+min(df$Sepal.Length)
+```
+
+- max
+```{r}
+max(df$Sepal.Length)
+```
+
+- range
+```{r}
+range(df$Sepal.Length)
+```
+  - 計算最大值和最小值的差距
+```{r}
+max(df$Sepal.Length) - min(df$Sepal.Length)
+```
+    
+## 平均
+```{r}
+mean(df$Sepal.Length)
+round(mean(df$Sepal.Length), 2)
+```
+
+```{r}
+mean(df$Sepal.Length, na.rm = TRUE)
+```
+
+
+## 中位數
+```{r}
+median(df$Sepal.Length)
+```
+
+```{r}
+quantile(df$Sepal.Length, 0.5)
+```
+
+## 四分位數
+```{r}
+# 找出最小值、第一四分位數、中位數、第三四分位數、最大值
+quantile(df$Sepal.Length, c(0, 0.25, 0.5, 0.75, 1))
+```
+
+- 計算第一四分位數與第三四分位數的差距
+```{r}
+IQR(df$Sepal.Length)
+```
+
+```{r}
+quantile(df$Sepal.Length, 0.75) - quantile(df$Sepal.Length, 0.25)
+```
+
+## Standard deviation and variance
+- Standard deviation 標準差
+```{r}
+sd(df$Sepal.Length)
+```
+
+- Variance 變異數
+```{r}
+var(df$Sepal.Length)
+```
+
+```{r}
+lapply(df[,1:4], sd)
+```
+
+## Coefficient of variation
+```{r}
+sd(dat$Sepal.Length) / mean(dat$Sepal.Length)
+```
+
+## Contingency table
+1. 假設花萼長度大於其中位數就屬於比較大的花，小於就是比較小的花。
+```{r}
+df$size <- ifelse((df$Sepal.Length) > median(df$Sepal.Length), "big", "small")
+        
+df
+```
+
+```{r}
+table(df$size)
+```
+
+```{r}
+table(df$Species, df$size)
+```
+
+```{r}
+prop.table(table(df$Species, df$size))
+```
+
+
