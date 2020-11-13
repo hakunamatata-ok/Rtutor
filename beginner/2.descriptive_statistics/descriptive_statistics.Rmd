@@ -137,4 +137,52 @@ table(df$Species, df$size)
 prop.table(table(df$Species, df$size))
 ```
 
+# 描述性統計畫圖
+## Bar plots
+1. Species 個數柱狀圖
+```{r}
+# install.packages("ggplot2")
+library(ggplot2)
+ggplot(df, aes(x = Species)) +
+    geom_bar()
+```
+
+2. Species 個數佔總體比例柱狀圖
+```{r}
+# solution 1
+barplot(prop.table(table(df$Species)))
+```
+
+```{r}
+# solution 2
+pt <- prop.table(table(df$Species))
+pt <- as.data.frame(pt)
+ggplot(pt, aes(x = Var1, y = Freq)) +
+  geom_col()
+```
+
+## Histogram
+```{r}
+# soluton 1
+hist(df$Sepal.Length)
+```
+
+```{r}
+# solution 2
+ggplot(df, aes(x = Sepal.Length)) +
+    geom_histogram(bins = 30, color = "black")
+```
+
+## Box plot
+```{r}
+# solution1
+boxplot(df$Sepal.Length ~ df$Species)
+```
+
+```{r}
+# solution2
+ggplot(df, aes(x = Species, y = Sepal.Length)) +
+  geom_boxplot()
+```
+
 
