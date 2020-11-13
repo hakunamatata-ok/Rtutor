@@ -3,26 +3,281 @@ title: "R 基本操作"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+## 變數設定
+```{r}
+# code
+a <- 1  
+b <- "apple"
+c <- c(1:10)
+d <- c("apple", "orange", 1, "cool", 3)
+
+a
+b
+c
+d
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+# print results
+print(a)  # 1
+print(b)  # "apple"
+print(c)  # [1] 1 2 3 4 5 6 7 8 9 10
+print(d)  # [1] "apple"  "orange"  "1"  "cool"  "3" 
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+a = 2
+print(a)  # 2
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+# 取出vector中的元素
+c[10]
+d[2]
+```
+
+### 變數屬性
+```{r}
+# type
+class(a)  # numeric
+class(b)  # character
+class(c)  # integer
+class(d)  # character
+```
+
+## 基本運算
+### 數學基本運算子
+```{r}
+# a=2
+a+2  # 4
+a-2  # 0
+a*4  # 8
+a/10  # 0.2
+a%%1  # 0
+a%%3  # 2
+a^3  # 8
+```
+
+#### 進階運算
+```{r}
+round(0.3452, digit = 2)  # 0.35
+floor(0.545)  # 0
+ceiling(0.345)  # 1
+```
+
+### 邏輯運算子
+```{r}
+# a = 2
+a == 2  # TRUE
+a != 2  # FALSE
+a > 2  # FALSE
+a < 2  # FALSE
+a >= 2  # TRUE
+a <= 2  # TRUE
+```
+
+## Help
+```{r}
+?str
+```
+
+```{r}
+help(summary)
+```
+
+
+## 資料結構
+- vector
+```{r vector}
+c(1, 3, 5, 9)
+c(1:10)
+c("apple", "orange", 1, 3)
+```
+
+- list
+```{r list 1}
+l1 <- list(c(1:5))
+print(l1)
+```
+
+```{r list 2}
+l2 <- list(x = c(1,2,4))
+print(l2)
+```
+
+```{r list 3}
+l3 <- list(x = c(1:10), y = c(10:20))
+print(l3)
+```
+
+
+- data.frame
+```{r data.frame}
+df <- data.frame(x = c(1:10), y = c(11:20))
+print(df)
+```
+
+```{r}
+df$x
+```
+
+- matrix
+```{r matrix 1}
+m1 <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol = 3, byrow = TRUE,
+           dimnames = list(c("row1", "row2"),
+                           c("C.1", "C.2", "C.3")))
+
+print(m1)
+```
+
+```{r matrix 2}
+m2 <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol = 3, byrow = F,
+           dimnames = list(c("row1", "row2"),
+                           c("C.1", "C.2", "C.3")))
+
+print(m2)
+```
+
+
+### 檢視資料內容及結構
+- 結構
+```{r}
+str(c) 
+```
+
+```{r}
+str(d)
+```
+
+```{r}
+str(l1)
+```
+
+```{r}
+str(l3)
+```
+
+```{r}
+str(df)
+```
+
+```{r}
+str(m1)
+```
+
+- 總結資料內容
+```{r}
+summary(c)
+```
+
+```{r}
+summary(l3)
+```
+
+```{r}
+summary(df)
+```
+
+```{r}
+summary(m1)
+```
+
+## 條件判斷
+- if-else
+```{r}
+# a = 2
+if(a == 2){
+  print("a is 2.")
+}else{
+  print("a isn't 2.")
+}
+```
+
+- if-else if-else
+```{r}
+score = 90
+if(score < 60){
+  print("fail.")
+}else if((score >= 60) & (score < 70)){
+  print("in level C.")
+}else if((score >= 70) & (score < 80)){
+  print("in leve B.")
+}else{
+  print("in level A.")
+}
+```
+
+- ifelse
+```{r}
+score1 = c(55, 60, 100)
+ifelse(score1 >= 60, "pass", "fail")
+```
+
+
+## 迴圈
+- for
+```{r}
+for (i in c(1:5)) {
+  print(i)
+}
+```
+
+- while
+```{r}
+x<-0
+while(x<=5){
+  print(x)
+  x <- x+1
+}
+```
+
+- break
+```{r}
+for(n in 1:10){
+  if(n==5){
+    break # 一執行到5，跳出迴圈，不再執行之後的迴圈
+  }
+  print(n)
+}
+```
+
+- next
+```{r}
+for(n in 1:6){
+  if(n==5){
+    next # 跳過5，直接執行下一個迴圈
+  }
+  print(n)
+}
+```
+
+
+## 練習
+1. 請列出1到10中的所有奇數
+```{r}
+for(i in 1:10){
+  if(i%%2 != 0){
+    print(i)
+  }else{
+    next
+  }
+}
+```
+
+2. 1到10中的所有奇數都乘以2並印出，只要有一值大於10則結束迴圈。
+```{r}
+for(i in 1:10){
+  if((i%%2) != 0){
+    i2 <- i*2
+  }else{
+    next
+  }
+        
+  if(i2 <= 10){
+      print(i2)
+  }else{
+      break
+  }
+}
+```
+
