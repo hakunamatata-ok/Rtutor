@@ -159,6 +159,8 @@ a <= 2  # TRUE
     df$x
     ```
 - matrix：矩陣
+    - 詳細介紹請看 [Matrix](/dLYoz7_1QYiuRFvYJILVCA)
+    - 逐行填入
     ```r=
     m1 <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol = 3, byrow = TRUE,
                dimnames = list(c("row1", "row2"),
@@ -166,6 +168,7 @@ a <= 2  # TRUE
     
     print(m1)
     ```
+    - 逐列填入
     ```r=
     m2 <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol = 3, byrow = F,
                dimnames = list(c("row1", "row2"),
