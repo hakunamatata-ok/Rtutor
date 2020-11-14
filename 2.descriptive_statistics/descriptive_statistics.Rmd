@@ -35,6 +35,9 @@ stat.desc(df)
 ```{r table}
 table(df$Species)
 ```
+```{r}
+summary(df$Species)
+```
 
 ```{r NROW & NCOL}
 NROW(df)  # 行數
@@ -57,6 +60,7 @@ max(df$Sepal.Length)
 ```{r}
 range(df$Sepal.Length)
 ```
+
   - 計算最大值和最小值的差距
 ```{r}
 max(df$Sepal.Length) - min(df$Sepal.Length)
@@ -109,12 +113,16 @@ var(df$Sepal.Length)
 ```
 
 ```{r}
+df[,1:4]
+```
+
+```{r}
 lapply(df[,1:4], sd)
 ```
 
 ## Coefficient of variation
 ```{r}
-sd(dat$Sepal.Length) / mean(dat$Sepal.Length)
+sd(df$Sepal.Length) / mean(df$Sepal.Length)
 ```
 
 ## Contingency table
@@ -144,7 +152,7 @@ prop.table(table(df$Species, df$size))
 # install.packages("ggplot2")
 library(ggplot2)
 ggplot(df, aes(x = Species)) +
-    geom_bar()
+    geom_bar(aes(fill = Species))
 ```
 
 2. Species 個數佔總體比例柱狀圖
@@ -154,11 +162,17 @@ barplot(prop.table(table(df$Species)))
 ```
 
 ```{r}
+pt <- prop.table(table(df$Species))
+pt <- as.data.frame(pt)
+pt
+```
+
+```{r}
 # solution 2
 pt <- prop.table(table(df$Species))
 pt <- as.data.frame(pt)
 ggplot(pt, aes(x = Var1, y = Freq)) +
-  geom_col()
+  geom_col(aes(fill = Var1))
 ```
 
 ## Histogram

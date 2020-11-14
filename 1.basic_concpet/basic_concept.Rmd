@@ -34,6 +34,7 @@ print(a)  # 2
 # 取出vector中的元素
 c[10]
 d[2]
+c[2]
 ```
 
 ### 變數屬性
@@ -85,6 +86,11 @@ a <= 2  # TRUE
 help(summary)
 ```
 
+```{r}
+sum(1:5)
+```
+
+
 
 ## 資料結構
 - vector
@@ -118,7 +124,7 @@ print(df)
 ```
 
 ```{r}
-df$x
+df$y
 ```
 
 - matrix
@@ -195,14 +201,14 @@ if(a == 2){
 
 - if-else if-else
 ```{r}
-score = 90
+score = 100
 if(score < 60){
   print("fail.")
 }else if((score >= 60) & (score < 70)){
   print("in level C.")
 }else if((score >= 70) & (score < 80)){
   print("in leve B.")
-}else{
+}else if((score >= 80) & (score) <= 100){
   print("in level A.")
 }
 ```
@@ -212,6 +218,15 @@ if(score < 60){
 score1 = c(55, 60, 100)
 ifelse(score1 >= 60, "pass", "fail")
 ```
+
+```{r}
+if(score1 >= 60){
+  print("pass")
+}else{
+  print("faill")
+}
+```
+
 
 
 ## 迴圈
