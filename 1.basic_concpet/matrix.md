@@ -214,7 +214,18 @@ mt%*%mt2
 mt2%*%mt
 ```
 
-### 5. 轉置矩陣
+### 5. 外積
+- mt和m2的外積
+```r=
+# solution 1
+mt %o% m2
+```
+```r=
+# solution 2
+outer(mt, m2)
+```
+
+### 6. 轉置矩陣
 - `t()`
     ```r=
     t(m2)
@@ -223,7 +234,7 @@ mt2%*%mt
     ```r=
     t(m1)
     ```
-### 6. 矩陣元素和平均值
+### 7. 矩陣元素和平均值
 function|意義
 ---|---
 `rowSums()`|計算列總和
@@ -242,7 +253,7 @@ sum(mt2)  # 16
 mean(mt2)  # 1.333333
 ```
 
-### 7. 行列式值
+### 8. 行列式值
 - `det()`: 方陣內的 向右對角線乘機的和 - 向左對角線乘機的和。
     :::warning
     :warning: 只有行列數一樣的方陣可以，不同行列數的矩陣不行使用該function。
@@ -257,9 +268,10 @@ mean(mt2)  # 1.333333
     det(mt2)  # Error
     ```
     
-### 8. 逆矩陣
+### 9. 逆矩陣
 - n階方陣A和同樣為n階方陣B，其內積為n階單位方陣。
     - $AB = BA = I_n \Rightarrow B = A^{-1}$
+    - $A^{-1}=\left [\begin{matrix}a&b\\ c&d \end{matrix} \right ]^{-1} =\frac{1}{ad-bc}\left [\begin{matrix}d&-b\\ -c&a \end{matrix} \right ]$
     :::warning
     :warning: 逆矩陣一定為方陣！
     :::
@@ -305,7 +317,7 @@ mean(mt2)  # 1.333333
     solve(A)%*%matrix(c(10,1,4), nrow = 3)
     ```
     
-### 9. 特徵值和特徵向量
+### 10. 特徵值和特徵向量
 - 特徵值：一個常數 $\lambda$ 使(方陣A*非0向量x)和x差的倍數。
 - 特徵向量：上述的非0向量x即是特徵向量。
 - $Ax=\lambda x \rightarrow Ax-\lambda Ix = 0 \rightarrow (A-\lambda I)x = 0$
@@ -319,7 +331,7 @@ mean(mt2)  # 1.333333
     eigen(A)  # values-特徵值, vectors-特徵向量
     ```
 
-### 10. 矩陣分解
+### 11. 矩陣分解
 - LU分解
     ```r=
     # install.packages("matrixcalc")
