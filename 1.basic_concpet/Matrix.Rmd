@@ -210,6 +210,15 @@ mt%*%mt2
 mt2%*%mt
 ```
 
+### 5. 外積
+```{r}
+# solution 1
+mt %o% m2
+
+# solution 2
+outer(mt, m2)
+```
+
 ### 5. 轉置矩陣
 ```{r}
 t(mt2)
