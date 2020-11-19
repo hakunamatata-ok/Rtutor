@@ -254,7 +254,7 @@ mean(mt2)  # 1.333333
 ```
 
 ### 8. 行列式值
-- `det()`: 方陣內的 向右對角線乘機的和 - 向左對角線乘機的和。
+- `det()`
     :::warning
     :warning: 只有行列數一樣的方陣可以，不同行列數的矩陣不行使用該function。
     :::
@@ -413,5 +413,38 @@ mean(mt2)  # 1.333333
     s3 <- matrix(c(-7,5,19), nrow = 3)
     solve(ma3) %*% s3
     # 無限多組解
+    ```
+    :::
+4. 請判斷此向量集是否為線性獨立：$S = \left\{ \left[
+ \begin{matrix}
+   1 \\
+   1 \\
+   1 \\
+   1 
+  \end{matrix}
+\right],
+ \left[
+  \begin{matrix}
+   1 \\
+   2 \\
+   1 \\
+   2 \\
+  \end{matrix} 
+ \right],
+ \left[
+  \begin{matrix}
+  1 \\
+  2 \\
+  3 \\
+  4 \\
+  \end{matrix}
+ \right]\right\}$
+
+    :::spoiler
+    ```r=
+    ma4 <- cbind(c(1,1,1,1),c(1,2,1,2),c(1,2,3,4))
+    t.ma4 <- t(ma4)
+    det(t.ma4 %*% ma4) == 0
+    # FALSE
     ```
     :::
