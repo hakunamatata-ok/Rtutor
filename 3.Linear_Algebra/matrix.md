@@ -383,6 +383,73 @@ mean(mt2)  # 1.333333
     ```r=
     svd(m4)$u %*% diag(svd(m4)$d) %*% t(svd(m4)$v)
     ```
+### 12. Rank of Matrix
+- 軸行
+```r=
+# solution 1
+R(m4)  # 4
+
+# solution 2
+## install.packages("Matrix")
+library(Matrix)
+rankMatrix(m4)  # 4
+```
+- $rank(A'A)=rank(A)$
+    ```r=
+    # solution 1
+    R(t(m4) %*% m4) == R(m4)
+    
+    # solution 2
+    rankMatrix(t(m4) %*% m4) == rankMatrix(m4)  # TRUE
+    ```
+### 13. Kronecker Products
+```r=
+kronecker(A,m4)
+```
+- $(A \bigotimes B)^{-1}=A^{-1} \bigotimes B^{-1}$
+    ```r=
+    t(kronecker(A,m4)) == kronecker(t(A), t(m4))  # all TRUE
+    ```
+
+### 14. The Vec Operator
+```r=
+library(matrixcalc)
+vec(m4)
+```
+- $tr(A' \bigotimes B) = \{vec(A)\}'vec(B).$
+    ```r=
+    # trace of matrix, use sum(diag(A))
+    t_a <- t(m4)
+    B4 <- matrix(c(1:16), nrow = 4)
+    sum(diag(t_a %*% B4)) == t(vec(m4)) %*% vec(B4)  # TRUE
+    ```
+    
+### 15. Eigenvalues and Eigenvectors (特徵值和特徵向量)
+```r=
+eigen(m4)
+```
+- 特徵值
+```r=
+eigen(m4)$values  # 特徵值
+```
+- 特徵向量
+```r=
+eigen(m4)$vectors  # 特徵向量
+```
+
+### 16. 對稱矩陣
+- 製作對稱矩陣
+    ```r=
+    # install.packages("miscTools")
+    library(miscTools)
+    # 根據上三角做對稱矩陣
+    symMatrix(A[upper.tri(A, TRUE)], nrow=nrow(A), byrow=TRUE)  
+    symMatrix( 1:10, 4, upper = TRUE )
+
+    # 根據下三角做對稱矩陣
+    symMatrix(A[upper.tri(A, TRUE)], nrow=nrow(A), byrow=F)
+    symMatrix( 1:10, 4, byrow = FALSE )
+    ```
     
 ### 練習
 1. 請利用矩陣的方式，解未知數x,y：
@@ -415,6 +482,8 @@ mean(mt2)  # 1.333333
     # 無限多組解
     ```
     :::
+
+#### 線性代數有關題目
 4. 請判斷此向量集是否為線性獨立：$S = \left\{ \left[
  \begin{matrix}
    1 \\
@@ -446,5 +515,43 @@ mean(mt2)  # 1.333333
     t.ma4 <- t(ma4)
     det(t.ma4 %*% ma4) == 0
     # FALSE
+    ```
+    :::
+5. 請使用下列A、B矩陣，判斷此兩個矩陣的跡數（trace）性質是否符合： $tr(AB)=tr(BA)$ 和 $tr(A+B)=tr(B)+tr(A)$。
+    $A = \left[
+    \begin{matrix}
+      5 & 4 & 4 \\
+      2 & -3 & 1 \\
+      3 & 7 & 2
+    \end{matrix}
+    \right], B = \left[
+    \begin{matrix}
+        1 & 0 & 1 \\
+        0 & 1 & 0 \\
+        1 & 2 & 3
+    \end{matrix}
+    \right]$
+    :::spoiler
+    (1) tr(AB) = tr(BA)
+    ```r=
+    # solution 1
+    A1 <- cbind(c(5,2,3), c(4,-3,7), c(4,1,2))
+    B <- cbind(c(1,0,1), c(0,1,2),c(1,0,3))
+    sum(diag(A1 %*% B)) == sum(diag(B %*% A1))  # TRUE
+    ```
+    ```r=
+    # solution 2
+    ## install.packages("matlib")
+    library(matlib)
+    tr(A1 %*% B)
+    ```
+    (2) tr(A+B)=tr(B)+tr(A)
+    ```r=
+    # solution 1
+    sum(diag(A1+B)) == sum(diag(B)) + sum(diag(A1))
+    ```
+    ```r=
+    # solution 2
+    tr(A1+B) == tr(B) + tr(A1)
     ```
     :::
