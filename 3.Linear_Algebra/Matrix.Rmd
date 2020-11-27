@@ -22,6 +22,12 @@ m2 <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol = 3, byrow = F,
 print(m2)
 ```
 
+```{r}
+cbind(c(1,2), c(3,11), c(12,13))
+rbind(c(1,2,3), c(11,12,13))
+```
+
+
 - 看矩陣的行列數
 ```{r}
 dim(m1)
@@ -36,13 +42,14 @@ m1
 ### 三維矩陣
 - 將m1矩陣改成3維矩陣：兩個向度，每個為1:3的矩陣.
 ```{r}
-dim(m1) <- c(1,3,2)
+dim(m1) <- c(3,1,2)
 m1
 ```
 
 - m1屬性改變
 ```{r}
 class(m1)
+#class(m2)
 ```
 
 ### 合併列/行向量成矩陣
@@ -64,11 +71,12 @@ diag(1, nrow = 3)
 
 - 4:3矩陣，對角線為1～4
 ```{r}
-diag(c(1:4), nrow = 4, ncol = 3)
+diag(c(1:4), nrow = 4, ncol = 4)
 ```
 
 - 取出m2矩陣對角線上的數值
 ```{r}
+m2
 diag(m2)
 class(diag(m2))
 ```
@@ -77,7 +85,7 @@ class(diag(m2))
 - 取出第一行第二列的元素
 ```{r}
 m2
-m2[1,2]
+m2[2,1]
 ```
 
 - 取出第一行2～3的元素
@@ -99,7 +107,7 @@ class(m2[2, ,drop = F])
 
 - 不顯示行列的元素
 ```{r}
-m2[-2, -2]  # 不呈現第二行和第二列
+m2[-c(1:2), -2]  # 不呈現第二行和第二列
 ```
 
 - 修改矩陣元素
@@ -214,7 +222,12 @@ mt2 %*% mt
 
 - 矩陣次方
 ```{r}
-mt2 %*% mt2  # 矩陣平方
+# solution 1
+m3 %*% m3  # 矩陣平方
+
+# solution 2
+library(expm) 
+m3 %^% 2
 ```
 
 
@@ -258,6 +271,7 @@ det(matrix(1:9, nrow = 3))
 
 - 不同行列數的矩陣
 ```{r}
+mt2
 det(mt2)
 ```
 
@@ -349,6 +363,7 @@ t(chol(m4)) %*% chol(m4)
 
   - $分解矩陣對角線值的平方積 = 行列式值$
 ```{r}
+# diag(chol(m4))^2
 prod(diag(chol(m4))^2)
 det(m4)
 ```
@@ -385,7 +400,7 @@ svd(m4)
    
    - $svd的u %*% svd的d為對角線的矩陣 %*% svd的v之轉置矩陣 = 原矩陣$
 ```{r}
-svd(m4)$u %*% diag(svd(m4)$d) %*% t(svd(m4)$v)
+round(svd(m4)$u %*% diag(svd(m4)$d) %*% t(svd(m4)$v))
 ```
 
 ### 12. Rank of Matrix
@@ -415,6 +430,7 @@ kronecker(A,m4)
 - $(A \bigotimes B)^{-1}=A^{-1} \bigotimes B^{-1}$
 ```{r}
 t(kronecker(A,m4)) == kronecker(t(A), t(m4))
+sum(t(kronecker(A,m4)) != kronecker(t(A), t(m4)))
 ```
 
 ### 14. The Vec Operator
@@ -423,27 +439,15 @@ library(matrixcalc)
 vec(m4)
 ```
 
-- $tr(A' \bigotimes B) = \{vec(A)\}'vec(B).$
+- $tr(A'B) = \{vec(A)\}'vec(B).$
 ```{r}
 t_a <- t(m4)
 B4 <- matrix(c(1:16), nrow = 4)
 sum(diag(t_a %*% B4)) == t(vec(m4)) %*% vec(B4)  # TRUE
 ```
 
-### 15. Eigenvalues and Eigenvectors (特徵值和特徵向量)
-```{r}
-eigen(m4)
-```
 
-```{r}
-eigen(m4)$values  # 特徵值
-```
-
-```{r}
-eigen(m4)$vectors  # 特徵向量
-```
-
-### 16. 對稱矩陣
+### 15. 對稱矩陣
 ```{r}
 library(miscTools)
 # 根據上三角做對稱矩陣
@@ -451,8 +455,13 @@ symMatrix(A[upper.tri(A, TRUE)], nrow=nrow(A), byrow=TRUE)
 symMatrix( 1:10, 4, upper = TRUE )
 
 # 根據下三角做對稱矩陣
-symMatrix(A[upper.tri(A, TRUE)], nrow=nrow(A), byrow=F)
+symMatrix(A[lower.tri(A, T)], nrow=nrow(A), byrow = T)
 symMatrix( 1:10, 4, byrow = FALSE )
+```
+
+### 16. 
+```{r}
+is.idempotent.matrix(A)
 ```
 
 
