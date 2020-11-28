@@ -5,6 +5,7 @@ tags: R & Statistics
 ## 模擬隨機試驗
 - 擲銅板：取後放回，共擲20次。
     ```r=
+    library(caTools)
     set.seed(1234)
     f.coin <- sample(c("H","T"), size = 20, replace = T)
     f.coin
