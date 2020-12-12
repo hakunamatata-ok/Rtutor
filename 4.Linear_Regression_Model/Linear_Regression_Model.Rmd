@@ -19,6 +19,11 @@ train.df <- subset(mtcars, split == T)
 predict.df <- subset(mtcars, split == F)
 ```
 
+```{r}
+mtcars
+```
+
+
 
 ### 跑回歸
 ```{r}
@@ -34,6 +39,10 @@ summary(reg)
 anova(reg)
 ```
 
+```{r}
+reg$coefficients
+```
+
 
 ### 畫圖看回歸結果
 ```{r}
@@ -45,7 +54,6 @@ ggplot(train.df, aes(x = disp, y = hp)) +
            label = paste0("Y=",round(reg$coefficients[1],2),
                           "+", round(reg$coefficients[2],2),"X")) +
   ggtitle(label = "Simple Linear Regression")
-
 ```
 
 
@@ -81,6 +89,7 @@ anova(reg.all)
 mtcars2 <- mtcars
 mtcars2$disp2 <- mtcars2$disp^2  # disp平方
 mtcars2$disp3 <- mtcars2$disp^3  # disp立方
+mtcars
 mtcars2
 ```
 
@@ -110,8 +119,8 @@ ggplot(train.df2, aes(x = disp, y = hp)) +
   geom_point() +
   geom_line(aes(y = predict(reg.pn, newdata = train.df2)), colour = "blue") +
   annotate("text", x = 156, y = 200,
-           label = paste0("Y = ", round(reg.pn$coefficients[1],2), "+",round(reg.pn$coefficients[2],2), "X", round(reg.pn$coefficients[3],2), "X^2",
-             "+", round(reg.pn$coefficients[3],2),"X^3")) +
+           label = paste0("Y = ", round(reg.pn$coefficients[1],2),round(reg.pn$coefficients[2],2), "X","+", round(reg.pn$coefficients[3],2), "X^2",
+             "+", round(reg.pn$coefficients[4],2),"X^3")) +
   ggtitle(label = "Polynomial Regression")
 
 ```
@@ -119,6 +128,7 @@ ggplot(train.df2, aes(x = disp, y = hp)) +
 5. 預測
 ```{r}
 predict.df2$predict = predict(reg.pn, newdata = predict.df2)
+predict.df2$diff = predict.df2$predict - predict.df2$hp
 predict.df2
 ```
 
@@ -131,6 +141,11 @@ summary(mtcars)
 # 標準化
 mtcars.scale <- scale(mtcars)
 summary(mtcars.scale)
+```
+
+```{r}
+class(mtcars.scale)
+as.data.frame(mtcars.scale)
 ```
 
 2. 標準化回歸
@@ -150,6 +165,7 @@ anova(reg.scale)
 4. 比較標準化前後回歸係數差異
 ```{r}
 reg.all$coefficients
+print(" ")
 reg.scale$coefficients
 ```
 
@@ -163,6 +179,17 @@ greg.s
 ```{r}
 summary(greg.s)
 ```
+
+```{r}
+predict.df2$g.predict = ifelse(predict(greg.s, newdata = predict.df2) < 0, 0, 1)
+predict.df2$vs_predic = (predict.df2$vs == predict.df2$g.predict)
+predict.df2
+```
+
+```{r}
+iris
+```
+
 
 ## 練習
 1. 
@@ -198,6 +225,7 @@ predict.ir2$Predict.Species.type <- predict(greg.ir2, newdata = predict.ir2)
 predict.ir2$Predict.Species <- ifelse(predict.ir2$Predict.Species.type < 0, "setosa", "versicolor")
 
 mean(predict.ir2$Species == predict.ir2$Predict.Species)
+#predict.ir2
 ```
   
   
