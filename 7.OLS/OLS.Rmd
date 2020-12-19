@@ -1,63 +1,62 @@
 ---
-title: "OLS"
-output: html_document
+tags: R & Statistics
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-library(stargazer)
-```
-
-```{r}
-library(AER);library(ggplot2);library(dplyr);library(knitr)
-```
-
-# data
-```{r}
-data("Journals")
-```
-
-# 整理data
-```{r}
-journals <- Journals %>% mutate(citeprice = price/citations)
-summary(journals)
-```
-
-# 因果問句
+# OLS
+- 前置作業：
+    ```r=
+    library(AER);library(ggplot2);
+    library(dplyr);library(knitr)
+    ```
+- 使用data：package "AER" 裡面的“Journals”data。
+    - code:
+    ```r=
+    data("Journals")
+    ```
+    ```r=
+    journals <- Journals %>% mutate(citeprice = price/citations)
+    summary(journals)
+    ```
+- 以下code需大致了解dplyr：[dplyr簡單介紹](https://bookdown.org/PoMingChen/Dplyr_minicourse/)
+    
+## 因果問句
 - 探討問題：期刊價格（citeprice，平均文獻引用價格）如何影響其他圖書館訂閱量（subs）？
-```{r}
-library(psych)
-journals %>% 
-  select(citeprice,subs) %>%
-  pairs.panels()  # 看關聯程度（相關係數、顯著水準）
-```
-
-```{r}
-journals %>% 
-  select(citeprice,subs) %>%
-  mutate_all(log) %>%  # 對兩個變數取log
-  pairs.panels()  # 兩個變數關聯性變高
-```
-
+    ```r=
+    # install.packages("psych")
+    library(psych)
+    journals %>% select(citeprice, subs) %>%
+        pairs.panels()
+    ```
+    - 針對```citeprice```, ```subs```取log，並看關聯性：
+    ```r=
+    journals %>% 
+      select(citeprice,subs) %>%
+      mutate_all(log) %>%
+      pairs.panels()  # 兩個變數關聯性變高
+    ```
+    
 ## 效應評估
+- 期刊越重要，其引用次數越高，因此高引用次數的期刊，你認為它在「低價格下的訂閱數」（立足點）會比較高還是低？
+    - $Y_i$ = 期刊在高價的訂閱量
+    - $Y_Li$ = 期刊在低價的訂閱量
+- 假設高價$P_{H}\rightarrow Y_{Hi}$、低價（P_L).
+- $Y_i = Y_{Li}+\frac{Y_Hi-YLi}{P_{H}-P_L}(P_i-P_L)\ \Rightarrow Y_i = Y_{Li}+\beta_1^* (P_i-P_L)$
+    - 假設價格對每個期刊帶來的單位變化固定：$\frac{Y_{Hi}-Y_{Li}}{P_H-P_L} = \beta_1^*$
+
 ## 進階關聯分析
-```{r}
-Journals
-```
+- 數值變數v.s.數值變數
+    ```r=
+    # 判斷變數是否為數值類別
+    is_numeric<-function(x) all(is.numeric(x))
+    # 計算數數與citeprice的相關係數
+    cor_citeprice<-function(x) cor(x,journals$citeprice)
 
-```{r}
-# 判斷變數是否為數值類別
-is_numeric<-function(x) all(is.numeric(x))
-# 計算數數與citeprice的相關係數
-cor_citeprice<-function(x) cor(x,journals$citeprice)
-
-journals %>%  
-  select_if(is_numeric) %>%
-  summarise_all(cor_citeprice)
-```
-
+    journals %>%  
+      select_if(is_numeric) %>%
+      summarise_all(cor_citeprice)
+    ```
+    
 ## 複回歸模型
-```{r}
+```r=
 journals %>% 
   lm(log(subs)~log(citeprice),data=.) -> model1
 
@@ -65,25 +64,25 @@ journals %>%
   lm(log(subs)~log(citeprice)+foundingyear,data=.) -> model2
 ```
 
-
 ## broom
-```{r}
-library(broom)
-# 整理model（好看一點）
-model1$effects
-tidy(model1)
-```
-
-```{r}
-augment(model1)
-```
-
-```{r}
-glance(model1)
-```
-
+- 整理一下model，讓model好看一點
+- ```tidy()```: show model, 包含每項係數、p-value。
+    ```r=
+    library(broom)
+    tidy(model1)
+    ```
+- ```augment```: 看資料帶進模型的狀況，包含預測值和殘差。
+    ```r=
+    augment(model1)
+    ```
+- ```glance```: summary model，包含$R^2$.
+    ```r=
+    glance(model1)
+    ```
+    
 ## 模型比較
-```{r word_table, comment = ''}
+- stargzer: 讓統計表格比較好看。
+```r=
 journals %>% 
   lm(log(subs)~log(citeprice),data=.) -> model_1
 journals %>%
@@ -101,12 +100,4 @@ stargazer(model_1, model_2,
           se=list(model_1_coeftest[,"Std. Error"], model_2_coeftest[,2]),
           type="text",
           align=TRUE)
-
 ```
-
-```{r}
-# 中掛號用法
-model_2_coeftest[,2]
-model_2_coeftest[,"Std. Error"]
-```
-
