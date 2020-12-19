@@ -1,0 +1,112 @@
+---
+title: "OLS"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(stargazer)
+```
+
+```{r}
+library(AER);library(ggplot2);library(dplyr);library(knitr)
+```
+
+# data
+```{r}
+data("Journals")
+```
+
+# 整理data
+```{r}
+journals <- Journals %>% mutate(citeprice = price/citations)
+summary(journals)
+```
+
+# 因果問句
+- 探討問題：期刊價格（citeprice，平均文獻引用價格）如何影響其他圖書館訂閱量（subs）？
+```{r}
+library(psych)
+journals %>% 
+  select(citeprice,subs) %>%
+  pairs.panels()  # 看關聯程度（相關係數、顯著水準）
+```
+
+```{r}
+journals %>% 
+  select(citeprice,subs) %>%
+  mutate_all(log) %>%  # 對兩個變數取log
+  pairs.panels()  # 兩個變數關聯性變高
+```
+
+## 效應評估
+## 進階關聯分析
+```{r}
+Journals
+```
+
+```{r}
+# 判斷變數是否為數值類別
+is_numeric<-function(x) all(is.numeric(x))
+# 計算數數與citeprice的相關係數
+cor_citeprice<-function(x) cor(x,journals$citeprice)
+
+journals %>%  
+  select_if(is_numeric) %>%
+  summarise_all(cor_citeprice)
+```
+
+## 複回歸模型
+```{r}
+journals %>% 
+  lm(log(subs)~log(citeprice),data=.) -> model1
+
+journals %>%
+  lm(log(subs)~log(citeprice)+foundingyear,data=.) -> model2
+```
+
+
+## broom
+```{r}
+library(broom)
+# 整理model（好看一點）
+model1$effects
+tidy(model1)
+```
+
+```{r}
+augment(model1)
+```
+
+```{r}
+glance(model1)
+```
+
+## 模型比較
+```{r word_table, comment = ''}
+journals %>% 
+  lm(log(subs)~log(citeprice),data=.) -> model_1
+journals %>%
+  lm(log(subs)~log(citeprice)+foundingyear,data=.) -> model_2
+
+library(sandwich)
+library(lmtest)
+library(stargazer)
+
+#使用vcovHC函數來計算HC1型的異質變異（即橫斷面資料下的線性迴歸模型）
+coeftest(model_1, vcov. = vcovHC, type="HC1") -> model_1_coeftest
+coeftest(model_2, vcov. = vcovHC, type="HC1") -> model_2_coeftest
+
+stargazer(model_1, model_2, 
+          se=list(model_1_coeftest[,"Std. Error"], model_2_coeftest[,2]),
+          type="text",
+          align=TRUE)
+
+```
+
+```{r}
+# 中掛號用法
+model_2_coeftest[,2]
+model_2_coeftest[,"Std. Error"]
+```
+

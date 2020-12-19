@@ -1,0 +1,101 @@
+---
+title: "Panel Data"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(magrittr)
+```
+
+## data
+```{r}
+library(readr)
+fatality <- read_csv("https://raw.githubusercontent.com/tpemartin/Econometric-Analysis/master/Part%20II/fatality.csv")
+```
+
+- 檢查data
+```{r}
+fatality %>% summarise_all(funs(class))
+```
+
+## panel data package: plm
+```{r}
+# install.packages("plm")
+library(plm)
+```
+
+- 宣告data為panel data frame
+```{r}
+fatality <- pdata.frame(fatality,c("state","year"))
+```
+
+## 初步觀察資料
+```{r}
+#各州啤酒稅（beertax）與車禍死亡率（mrall）
+
+fatality %>% 
+  ggplot()+
+  geom_point(aes(x=beertax,y=I(mrall*1000)))
+```
+
+  - 不同州使用不同顏色畫圖
+```{r}
+fatality %>% 
+  ggplot()+
+  geom_point(aes(x=beertax,y=I(mrall*1000),color=state))
+```
+
+- 不同年用不同顏色畫圖
+```{r}
+fatality %>% 
+  ggplot()+
+  geom_point(aes(x=beertax,y=I(mrall*1000),color=year))
+```
+
+## 組內差異
+- 去除每個州的中間點，即進行Demean
+```{r}
+fatality %>% 
+  group_by(state) %>% #依state分組進行以下程序：
+  mutate(
+    mrall_demean=mrall-mean(mrall),
+    beertax_demean=beertax-mean(beertax)
+    ) %>%
+  select(mrall_demean,beertax_demean) %>%
+  ungroup() -> demean_results # grouping variable會被保留
+```
+
+- 再畫一次圖
+```{r}
+demean_results %>%
+  ggplot()+
+  geom_point(aes(x=beertax_demean,y=mrall_demean,color=state))+
+  geom_smooth(aes(x=beertax_demean,y=mrall_demean),method = "lm",se=FALSE)
+```
+
+## 使用dummies
+```{r}
+fatality %>% lm(data=., mrall~factor(state)) -> results
+# results$residuals 也會是demean的結果
+results
+```
+
+- 模型估計 迴歸模型設定
+```{r}
+model<- mrall~beertax
+```
+
+### OLS
+```{r}
+pool1<-plm(model, data=fatality, model='pooling')
+summary(pool1)
+```
+
+### Random Effect
+```{r}
+re1<-plm(model, data=fatality, model='random')
+summary(re1)
+```
+

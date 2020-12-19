@@ -22,7 +22,7 @@ pbinom(2, 10, 0.7)
 
 - ```qbinom(p, size, prob)```: $F^{-1}(p)$
 ```{r}
-qbinom(0.95, 10, 0.7)
+qbinom(0.001590386, 10, 0.7)
 ```
 
 -  n 個符合二項式分布的隨機值: ```rbinom```
@@ -150,6 +150,20 @@ x <- rchisq(1000, df = 5)
 hist(x, ylab = "Frequency")
 ```
     
+## 指數分配
+- 累積機率函數(CDF): ```pexp()```, $P(X \leq x)$
+```{r}
+# Compute P(0< X < 2) for X exponential(4)
+pexp(2,4)-pexp(0,4)
+```
+  - plot
+```{r}
+# 畫exp(λ=0.5)圖形
+curve(dexp(x,0.5),0,10,col="blue",add=F,ylab="f(x)")    
+```
+- 反CDF： ```qexp()```
+- n個指數分配樣本向量：```rexp()```
+
 ## 練習
 1. 有三枚硬幣：公正硬幣、擲出正面機率是 0.7 的硬幣、擲出正面機率是 0.3 的硬幣。投擲這三枚硬幣 100 次，求出現 0 到 100 次正面的機率分布圖。
 
