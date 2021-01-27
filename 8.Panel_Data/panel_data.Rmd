@@ -44,18 +44,20 @@ fatality %>%
 ```{r}
 fatality %>% 
   ggplot()+
-  geom_point(aes(x=beertax,y=I(mrall*1000),color=state))
+  geom_point(aes(x=beertax,y=I(mrall*1000),color=state))+
+  guides(color = guide_legend(keywidth = .6, keyheight = .8))
 ```
 
 - 不同年用不同顏色畫圖
 ```{r}
 fatality %>% 
   ggplot()+
-  geom_point(aes(x=beertax,y=I(mrall*1000),color=year))
+  geom_point(aes(x=beertax,y=I(mrall*1000),color=year))+
+  guides(color = guide_legend(keywidth = .6, keyheight = .8))
 ```
 
 ## 組內差異
-- 去除每個州的中間點，即進行Demean
+- 去除每個州的中間點，即進行de-mean
 ```{r}
 fatality %>% 
   group_by(state) %>% #依state分組進行以下程序：
@@ -64,7 +66,7 @@ fatality %>%
     beertax_demean=beertax-mean(beertax)
     ) %>%
   select(mrall_demean,beertax_demean) %>%
-  ungroup() -> demean_results # grouping variable會被保留
+  ungroup() -> demean_results # 分組變數會被保留
 ```
 
 - 再畫一次圖
@@ -72,13 +74,13 @@ fatality %>%
 demean_results %>%
   ggplot()+
   geom_point(aes(x=beertax_demean,y=mrall_demean,color=state))+
-  geom_smooth(aes(x=beertax_demean,y=mrall_demean),method = "lm",se=FALSE)
+  geom_smooth(aes(x=beertax_demean,y=mrall_demean),method = "lm",se=FALSE)+
+  guides(color = guide_legend(keywidth = .6, keyheight = .8))
 ```
 
 ## 使用dummies
 ```{r}
 fatality %>% lm(data=., mrall~factor(state)) -> results
-# results$residuals 也會是demean的結果
 results
 ```
 
@@ -87,15 +89,68 @@ results
 model<- mrall~beertax
 ```
 
-### OLS
+### OLS pooled
+- $$mrall_{it} = \beta_0 + \beta_1BeerTax_{it}+\upsilon_{it}$$
 ```{r}
 pool1<-plm(model, data=fatality, model='pooling')
 summary(pool1)
 ```
 
 ### Random Effect
+- $$mrall_{it} = \beta_0 + \beta_1BeerTax_{it}+\upsilon_{it}$$
 ```{r}
 re1<-plm(model, data=fatality, model='random')
 summary(re1)
 ```
+
+### Fixed Effect
+- 一個固定效果：$$mrall_{it} = \alpha_i + \beta_1BeerTax_{it}+\epsilon_{it}$$
+```{r}
+fe1<-plm(model, data=fatality, model='within', effect='individual')
+summary(fe1)
+```
+
+- 兩個固定效果：$$mrall_{it} = \alpha_i + \delta_{t} + \beta_1BeerTax_{it}+\epsilon_{it}$$
+```{r}
+fe2<-plm(model, data=fatality, model='within', effect='twoways')
+summary(fe2)
+```
+
+### Model Comparison
+```{r}
+library(stargazer)
+stargazer(pool1,re1,fe1,fe2,type='text',
+          column.labels = c("Pooled OLS","RE","FE-individual","FE-two-ways"))
+```
+
+## Choose Model
+- BP Test
+```{r}
+library(lmtest)
+bptest(pool1)
+```
+
+- Test for Random Effects vs OLS
+```{r}
+plmtest(pool1)
+```
+
+- Test for Fixed Effects versus OLS
+```{r}
+# fe1 vs pool1
+pFtest(fe1, pool1)
+```
+
+```{r}
+# fe2 vs pool2
+pFtest(fe2, pool1)
+```
+
+- Hausman Test
+  - $H_0$: $v_{it}$ 與 $BeerTax_{it}$ 無關 -> 可以用 Fixed Effect 或 Random Effect
+  - $H_1$: $v_{it}$ 與 $BeerTax_{it}$ 有關 -> 用 Fixed Effect
+```{r}
+phtest(fe1,re1)  # inconsistent => use Fixed Effect
+```
+
 
