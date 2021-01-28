@@ -10,6 +10,8 @@ tags: R & Statistics
     ```
 - data:
     - [變數解釋](https://bookdown.org/tpemartin/econometric_analysis/data/Fatality.docx)
+    ![](https://i.imgur.com/pAg6td7.png)
+
     ```r=
     library(readr)
     fatality <- read_csv("https://raw.githubusercontent.com/tpemartin/Econometric-Analysis/master/Part%20II/fatality.csv")
