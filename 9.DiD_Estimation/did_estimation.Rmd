@@ -3,26 +3,129 @@ title: "Difference-in-Differences Estimation"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+- 前置作業：
+```{r}
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(tidyr)
 ```
 
-## R Markdown
+## data:
+```{r}
+load(url("https://github.com/tpemartin/Econometric-Analysis/blob/master/data/public.rda?raw=true"))
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# 選取要的欄位：STATE, EMPFT, EMPPT, EMPFT2, and EMPPT2
+public_use <- select(public, STATE, EMPFT, EMPPT, EMPFT2, EMPPT2)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+# 查看資料屬性
+str(public_use)
 ```
 
-## Including Plots
+- 轉變屬性
+```{r}
+public_use <- public_use %>%
+  mutate_if(is.character, as.numeric)
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+str(public_use)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## 比較資料
+- 數字比較
+```{r}
+s_public_use <- public_use %>%
+  group_by(STATE) %>%
+  summarise(
+    mFT_before = mean(EMPFT, na.rm = T),
+    mFT_after = mean(EMPFT2, na.rm = T),
+    mPT_before = mean(EMPPT, na.rm = T),
+    mPT_after = mean(EMPFT2, na.rm = T),
+    .groups = "drop"
+  ) 
+
+s_public_use
+```
+
+- 畫圖比較
+```{r}
+# 調整s_public_use
+ns_public_use <- s_public_use %>% 
+  gather(type,employment,-STATE) %>%
+  mutate(
+    State = ifelse(STATE == 0, "PA", "NJ")
+  )
+
+ns_public_use
+```
+
+   - 全職就業比較
+```{r}
+filter(ns_public_use, type %in% c("mFT_before", "mFT_after")) %>% 
+  {ggplot(., aes(x = type, y = employment, 
+                 color = State, group = State)) +
+      geom_point() + 
+      geom_line() +
+      guides(color = guide_legend(title = "State")) +
+      xlim("mFT_before", "mFT_after") +
+      ggtitle(label = "Mean Full Time Employment Comparison")}
+```
+
+  - 兼職就業比較
+```{r}
+filter(ns_public_use, type %in% c("mPT_before", "mPT_after")) %>% 
+  {ggplot(., aes(x = type, y = employment, 
+                 color = as.factor(State), group = State)) +
+      geom_point() + 
+      geom_line() +
+      guides(color = guide_legend(title = "State")) +
+      xlim("mPT_before", "mPT_after") +
+      ggtitle(label = "Mean Part Time Employment Comparison")}
+```
+  
+## Difference-in-differences
+### Data 處理
+```{r}
+FT_public <- public %>% 
+  select(STATE,EMPFT,EMPFT2) %>%
+  group_by(STATE) %>%
+  gather(type,emp,-STATE) 
+
+# get dummy variables
+FT_public <- FT_public %>%
+  mutate(
+    STATE1=(STATE==1),
+    AFTER=(type=="EMPFT2"),
+    PolicyImpact=STATE1*AFTER,
+    emp = as.numeric(emp)
+  )
+
+FT_public
+```
+
+## 估計
+```{r}
+result <- lm(emp ~ STATE1+AFTER+PolicyImpact, data=FT_public)
+result
+```
+
+```{r}
+summary(result)
+```
+
+## 聚類標準誤
+```{r}
+# install.packages("clubSandwich")
+library(clubSandwich)
+# 將FT_public根據STATE和type來分群
+FT_public %>% 
+  mutate(cluster=factor(STATE):factor(type)) -> FT_public
+
+FT_public$cluster %>% as.factor %>% levels
+```
+
+- 調整
+```{r}
+coef_test(result, vcov = "CR2", cluster = FT_public$cluster)
+```
+
+
