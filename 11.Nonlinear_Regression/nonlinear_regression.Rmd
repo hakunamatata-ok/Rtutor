@@ -1,0 +1,218 @@
+---
+title: "Nonlinear Regression"
+output: html_document
+---
+
+- 前置作業
+```{r}
+library(AER)
+library(dplyr)
+```
+
+## data
+```{r}
+data("CASchools")
+# add score and STR
+CASchools <- CASchools %>% 
+    mutate(
+      STR = students/teachers,
+      score = (read+math)/2
+    )
+```
+
+## 實作-多項式模型
+### Case 1: 簡單線型回歸（OLS）
+```{r}
+library(ggplot2)
+ggplot(CASchools, aes(x = income, y = score)) +
+  geom_point(colour = "steelblue") +
+  geom_smooth(method = "lm", se = F, color = "red") +
+  ggtitle(label = "Score vs. District Income and a Linear OLS Regression")
+```
+
+### Case 2: 二次方回歸（Quadratic Model)
+```{r}
+qm <- lm(score ~ income + I(income^2), data = CASchools) 
+summary(qm)
+```
+
+- test of coefficients
+```{r}
+coeftest(qm, vcov. = vcovHC, type = "HC1")
+```
+
+- 畫圖
+```{r}
+ggplot(CASchools, aes(x = income, y = score)) +
+  geom_point(colour = "steelblue") +
+  geom_smooth(method = "lm", se = F, color = "red") +
+  geom_smooth(method = "lm", formula = y ~ poly(x,2), 
+              se = F, color = "dark orange") +
+  ggtitle(label = "Score vs. District Income and a Quadratic Regression")
+```
+
+## Case 3: 立方回歸（Cubic Model）
+```{r}
+cm <- lm(score ~ poly(income, degree = 3, raw = T),
+        data = CASchools)
+summary(cm)
+```
+
+- 假設檢定
+```{r}
+matrix <- rbind(c(0, 0, 1, 0),
+            c(0, 0, 0, 1))
+linearHypothesis(cm, hypothesis.matrix = matrix, white.adjust = "hc1")
+```
+
+- 使用`coeftest`檢定
+```{r}
+coeftest(cm, vcov. = vcovHC, type = "HC1")
+```
+
+```{r}
+ggplot(CASchools, aes(x = income, y = score)) +
+  geom_point(colour = "steelblue") +
+  geom_smooth(method = "lm", se = F, color = "red") +
+  geom_smooth(method = "lm", formula = y ~ poly(x,2), 
+              se = F, color = "orange") +
+  geom_smooth(method = "lm", formula = y ~ poly(x,3), 
+              se = F, color = "lightcoral") +
+  ggtitle(label = "Score vs. District Income and a Cubbic Regression")
+```
+
+### Quadratic Model在高低Income單位變化的預測結果
+- 使用二次方回歸模型，預測收入為10和11時的單位變化，及收入為40和41時的單位變化。
+```{r}
+new_df <- data.frame(income = c(10, 11, 40, 41))
+Y_hat_qm <- predict(qm, newdata = new_df)
+Y_hat_qm %>% matrix(., nrow = 2, byrow = F) %>%
+  {diff(.)}
+```
+
+## 實作-對數模型
+### Case 1: Y受X的變化量影響
+- model
+```{r}
+logm <- lm(score ~ log(income), data = CASchools)
+summary(logm)
+```
+
+- 使用`coeftest`進行假設檢定。
+```{r}
+coeftest(logm, vcov = vcovHC, type = "HC1")
+```
+
+```{r}
+ggplot(CASchools, aes(x = income, y = score)) +
+  geom_point(colour = "steelblue") +
+  geom_smooth(method = "lm", formula = y ~ log(x), 
+              se = F, color = "red") +
+  ggtitle(label = "Score vs. District Income and Linear-Log Regression")
+```
+
+### Case 2: Y的變化量受X影響
+- Model：$ln(Y_i) = \beta_0+\beta_1*X_i+\epsilon_i$
+```{r}
+logm2 <- lm(log(score) ~ income, data = CASchools)
+summary(logm2)
+```
+
+- 使用`coeftest`進行假設檢定。
+```{r}
+coeftest(logm2, vcov = vcovHC, type = "HC1") 
+```
+
+### Case 3: Y的變化量受X的變化量影響
+- model
+```{r}
+logm3 <- lm(log(score) ~ log(income), data = CASchools)
+summary(logm3)
+```
+
+- 使用`coeftest`進行假設檢定。
+```{r}
+coeftest(logm3, vcov = vcovHC, type = "HC1")
+```
+
+- 畫圖
+```{r}
+ggplot(CASchools, aes(x = income, y = log(score))) +
+  geom_point(colour = "steelblue") +
+  geom_smooth(method = "lm", se = F, color = "red") +
+  geom_smooth(method = "lm", formula = y ~ log(x), 
+              se = F, color = "orange") +
+  ggtitle(label = "Log-Linear Regression vs. Log-Log Regression")
+```
+
+## 實作-變數交叉回歸
+### Case 1: 兩個判斷變數交互作用
+- Model
+```{r}
+# data
+CASchools_bi1 <- CASchools %>%
+  mutate(
+  D1 = ifelse(STR >= 20, 1, 0),
+  D2 = ifelse(english >= 10, 1, 0)
+)
+# model
+bm1 <- lm(score ~ D1*D2, data = CASchools_bi1)
+summary(bm1)
+```
+
+- 檢定：```coeftest```
+```{r}
+coeftest(bm1, vcov. = vcovHC, type = "HC1")
+```
+
+- 預測結果
+```{r}
+b_new_df <- data.frame(D1 = c(0,0,1,1), D2 = c(0,1,0,1))
+b_new_df$predict <- predict(bm1, b_new_df)
+b_new_df
+```
+
+### Case 2: 一個連續變數和一個判斷變數交互作用
+- 探討：學校師生比和高英文為第二外語的學生比，如何影響成績。
+- Model: $Y_i = \beta_0+\beta_1*STR_i+\beta_2*D_{2i}+\beta_2*(STR_i*D_{2i})+\epsilon_i$
+```{r}
+bcm2 <- lm(score ~ STR + D2 + STR*D2, data = CASchools_bi1)
+summary(bcm2)
+```
+
+- 檢定：```coeftest```
+```{r}
+coeftest(bcm2, vcov. = vcovHC, type = "HC1")
+```
+
+- 畫圖
+```{r}
+bcm2_fun0 <- function(x){
+  return(coef(bcm2)[1]+coef(bcm2)[2]*x+
+    coef(bcm2)[3]*0+coef(bcm2)[4]*0*x)
+}
+
+bcm2_fun1 <- function(x){
+  return(coef(bcm2)[1]+coef(bcm2)[2]*x+
+    coef(bcm2)[3]*1+coef(bcm2)[4]*1*x)
+}
+
+ggplot(CASchools_bi1, aes(x = STR, y = score, color = factor(D2))) +
+  geom_point() +
+  scale_x_continuous(limits = c(0,27), breaks = seq(0,27, by = 5)) +
+  stat_function(fun = bcm2_fun0, geom = "line", color = "coral") +
+  stat_function(fun = bcm2_fun1, geom = "line", color = "skyblue")
+```
+
+### Case 3: 兩個連續變數的交互作用
+- model
+```{r}
+ccm3 <- lm(score ~ STR + english + STR * english, data = CASchools_bi1)
+summary(ccm3)
+```
+
+- 檢定
+```{r}
+coeftest(ccm3, vcov. = vcovHC, type = "HC1")
+```
+
