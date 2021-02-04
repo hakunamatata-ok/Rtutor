@@ -65,7 +65,7 @@ filter(ns_public_use, type %in% c("mFT_before", "mFT_after")) %>%
                  color = State, group = State)) +
       geom_point() + 
       geom_line() +
-      guides(color = guide_legend(title = "State")) +
+      guides(color = guide_legend(title = "State1")) +
       xlim("mFT_before", "mFT_after") +
       ggtitle(label = "Mean Full Time Employment Comparison")}
 ```
