@@ -34,7 +34,6 @@ fatality <- pdata.frame(fatality,c("state","year"))
 ## 初步觀察資料
 ```{r}
 #各州啤酒稅（beertax）與車禍死亡率（mrall）
-
 fatality %>% 
   ggplot()+
   geom_point(aes(x=beertax,y=I(mrall*1000)))
@@ -67,6 +66,8 @@ fatality %>%
     ) %>%
   select(mrall_demean,beertax_demean) %>%
   ungroup() -> demean_results # 分組變數會被保留
+
+demean_results
 ```
 
 - 再畫一次圖
