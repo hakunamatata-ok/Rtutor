@@ -1,0 +1,18 @@
+---
+title: "Heteroskedasticity"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(PoEdata)
+library(lmtest)
+library(broom)
+library(sandwich)
+library(stargazer)
+```
+
+```{r}
+
+```
+

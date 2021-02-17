@@ -13,9 +13,6 @@ install_git("https://github.com/ccolonescu/PoEdata")
 ```{r}
 library(dplyr)
 library(PoEdata)
-library(lmtest)
-library(broom)
-library(sandwich)
 library(stargazer)
 ```
 
