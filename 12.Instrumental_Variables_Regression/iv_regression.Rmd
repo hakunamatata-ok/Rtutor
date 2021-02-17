@@ -1,0 +1,179 @@
+---
+title: "Instrumental Variables Regression"
+output: html_document
+---
+
+```{r}
+library(AER)
+library(stargazer)
+library(dplyr)
+```
+
+## Data
+```{r}
+data("CigarettesSW")
+```
+
+## Model
+### A Single Regressor and A Single Instrument
+1. 生成人均實質價格和營業稅的變數：
+```{r}
+# generate 2 variables
+CigarettesSW <- CigarettesSW %>%
+    mutate(
+      Rprice = price/cpi,
+      SalesTax = (taxs - tax)/cpi
+    )
+    
+# correlation between SalesTax and price
+cor(CigarettesSW$SalesTax, CigarettesSW$price)
+```
+
+2. 取出1995年的資料來分析：
+```{r}
+df1995 <- subset(CigarettesSW, year == 1995)
+```
+
+3. 跑 $log(P^{cigarettes}_i)$ 對 $SalesTax$ 回歸
+```{r}
+# first-stage regression
+cig_s1 <- lm(log(Rprice) ~ SalesTax, data = df1995)
+
+coeftest(cig_s1, vcov = vcovHC, type = "HC1")
+
+summary(cig_s1)
+```
+
+4. 存取第一階段回歸，$log(P^{cigarettes}_i)$ 的結果
+```{r}
+cigp_pred1 <- cig_s1$fitted.values
+```
+
+5. 做第二階段，$log(Q^{cigarettes}_i)$ 對 $log(P^{cigarettes}_i)$ 回歸。
+```{r}
+# solution 1
+cig_s2 <- lm(log(df1995$packs) ~ cigp_pred1)
+
+coeftest(cig_s2, vcov = vcovHC, type = "HC1")
+
+# solution 2
+cig_ivreg <- ivreg(log(packs) ~ log(Rprice) | SalesTax, data = df1995)
+
+coeftest(cig_ivreg, vcov = vcovHC, type = "HC1")
+```
+
+### The General IV Regression Model
+1. 生成實質人均所得
+```{r}
+df1995$Rincome <- with(df1995, income/population/cpi)
+```
+
+2. 使用`ivreg()`得到係數。
+```{r}
+cig_ivreg2 <- ivreg(log(packs) ~ log(Rprice) + log(Rincome) | log(Rincome) + SalesTax, data = df1995)
+
+coeftest(cig_ivreg2, vcov = vcovHC, type = "HC1")
+```
+
+## Check Instrument Validity
+1. 重新整理 CigarettesSW Data，並取出1985及1995年的資料。
+```{r}
+CigarettesSW <- CigarettesSW %>%
+    mutate(
+      Rincome = income/population/cpi,
+      cigtax = tax/cpi
+    )
+
+df1985 <- subset(CigarettesSW, year == 1985)
+df1995 <- subset(CigarettesSW, year == 1995)
+```
+
+2. 生成對應的變數。
+```{r}
+# diff of packs
+pack_diff <- log(df1995$packs) - log(df1985$packs)
+
+# diff of real price
+Rprice_diff <- log(df1995$Rprice) - log(df1985$Rprice)
+
+# diff of income
+Rincome_diff <- log(df1995$Rincome) - log(df1985$Rincome)
+
+# diff of SalesTax
+SalesTax_diff <- df1995$SalesTax - df1985$SalesTax
+
+# diff of cigarettes tax
+cigtax_diff <- df1995$cigtax - df1985$cigtax
+```
+
+3. 3種不同的IV估計：
+（1） TSLS 只用 `SalesTax` 當 instrument。
+```{r}
+cig_ivreg_diff1 <- ivreg(pack_diff ~ Rprice_diff + 
+                           Rincome_diff | Rincome_diff + SalesTax_diff)
+```
+
+（2） TSLS 只用 `cigtax` 當instrument。
+```{r}
+cig_ivreg_diff2 <- ivreg(pack_diff ~ Rprice_diff + Rincome_diff | 
+                           Rincome_diff + cigtax_diff)
+```
+
+（3）TSLS 使用 `SalesTax` 和 `cigtax` 當instrument。
+```{r}
+cig_ivreg_diff3 <- ivreg(pack_diff ~ Rprice_diff + Rincome_diff |
+                           Rincome_diff + SalesTax_diff + cigtax_diff)
+```
+
+4. 3種Model比較
+```{r}
+# gather robust standard errors in a list
+rob_se <- list(sqrt(diag(vcovHC(cig_ivreg_diff1, type = "HC1"))),
+          sqrt(diag(vcovHC(cig_ivreg_diff2, type = "HC1"))),
+           sqrt(diag(vcovHC(cig_ivreg_diff3, type = "HC1"))))
+
+# generate table
+stargazer(cig_ivreg_diff1, cig_ivreg_diff2,cig_ivreg_diff3,
+  header = FALSE, 
+  type = "text",
+  digits = 3, 
+  column.labels = c("IV: salestax", "IV: cigtax", "IVs: salestax, cigtax"),
+  dep.var.labels.include = FALSE,
+  dep.var.caption = "Dependent Variable: 1985-1995 Difference in Log per Pack Price",
+  se = rob_se)
+```
+
+5. F-test
+```{r}
+# first-stage regressions
+relevance1 <- lm(Rprice_diff ~ SalesTax_diff + Rincome_diff)
+relevance2 <- lm(Rprice_diff ~ cigtax_diff + Rincome_diff)
+relevance3 <- lm(Rprice_diff ~ Rincome_diff + SalesTax_diff + cigtax_diff)
+
+# check instrument relevance for model (1)
+linearHypothesis(relevance1, 
+             "SalesTax_diff = 0", 
+             vcov = vcovHC, type = "HC1")
+
+# check instrument relevance for model (2)
+linearHypothesis(relevance2, 
+             "cigtax_diff = 0", 
+             vcov = vcovHC, type = "HC1")
+
+# check instrument relevance for model (3)
+linearHypothesis(relevance3, 
+             c("SalesTax_diff = 0", "cigtax_diff = 0"), 
+             vcov = vcovHC, type = "HC1")
+```
+
+6. J-test
+```{r}
+cig_iv_OR <- lm(residuals(cig_ivreg_diff3) ~ Rincome_diff + SalesTax_diff + cigtax_diff)
+
+linearHypothesis(cig_iv_OR, 
+                 c("SalesTax_diff = 0", "cigtax_diff = 0"), 
+                 test = "Chisq")
+# chisq 卡方檢定
+
+```
+
