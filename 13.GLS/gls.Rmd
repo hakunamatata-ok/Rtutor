@@ -5,12 +5,6 @@ output: html_document
 
 - 前置作業
 ```{r}
-# install package "PoEdata"
-library(devtools)
-install_git("https://github.com/ccolonescu/PoEdata")
-```
-
-```{r}
 library(dplyr)
 library(PoEdata)
 library(stargazer)
@@ -20,7 +14,6 @@ library(stargazer)
 ```{r}
 data("food")
 ```
-
 
 ## Known Form of Variance
 ```{r}
