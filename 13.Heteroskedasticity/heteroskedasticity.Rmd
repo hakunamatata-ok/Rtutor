@@ -63,6 +63,8 @@ food$res_sqr <- (model1$residuals)^2
 model1_res <- lm(res_sqr ~ income, data=food)
 stat_model1_res <- glance(model1_res)
 stat_model1_res
+
+summary(model1_res)
 ```
 
 4. 找到 $\alpha = 0.05$時，卡方分配的 critical value。

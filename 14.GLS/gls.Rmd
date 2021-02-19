@@ -80,6 +80,3 @@ stargazer(food_ols, food_wls, food_fgls,
 ```
 
 
-
-
-## Grouped Data

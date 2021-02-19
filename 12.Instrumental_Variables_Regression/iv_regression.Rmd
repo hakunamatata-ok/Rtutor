@@ -44,6 +44,10 @@ coeftest(cig_s1, vcov = vcovHC, type = "HC1")
 summary(cig_s1)
 ```
 
+```{r}
+cig_s1
+```
+
 4. 存取第一階段回歸，$log(P^{cigarettes}_i)$ 的結果
 ```{r}
 cigp_pred1 <- cig_s1$fitted.values
@@ -66,6 +70,7 @@ coeftest(cig_ivreg, vcov = vcovHC, type = "HC1")
 1. 生成實質人均所得
 ```{r}
 df1995$Rincome <- with(df1995, income/population/cpi)
+
 ```
 
 2. 使用`ivreg()`得到係數。
